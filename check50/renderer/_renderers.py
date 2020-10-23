@@ -5,6 +5,8 @@ import jinja2
 import pkg_resources
 import termcolor
 
+from junit_xml import TestSuite, TestCase
+
 TEMPLATES = pathlib.Path(pkg_resources.resource_filename("check50.renderer", "templates"))
 
 
@@ -45,3 +47,23 @@ def to_ansi(slug, results, version, _log=False):
             lines += (f"    {line}" for line in result["log"])
     return "\n".join(lines)
 
+def to_junitXML(slug, results, version):
+    cases = []
+    for r in results:
+        name = r["name"]
+        log = "\n".join(r["log"])
+        cause = r["cause"]
+        tc = TestCase(name, classname=f"check50.{slug}.{name}", log=log, allow_multiple_subelements=True)
+        if r["passed"] == False:
+            tc.add_error_info(message="error", output=cause["rationale"])
+            if cause.get("help", None) is not None:
+                tc.add_error_info(message="help", output=cause["help"])
+        elif r["passed"] is None:
+            tc.add_skipped_info(message="reason", output=cause["rationale"])
+            if cause.get("help", None) is not None:
+                tc.add_skipped_info(message="help", output=cause["help"])
+        cases.append(tc)
+
+    ts = TestSuite(f"check50.{slug}", cases)
+    # pretty printing is on by default but can be disabled using prettyprint=False
+    return TestSuite.to_xml_string([ts])

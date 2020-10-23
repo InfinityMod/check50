@@ -290,7 +290,7 @@ def main():
                         action="store",
                         nargs="+",
                         default=["ansi", "html"],
-                        choices=["ansi", "json", "html"],
+                        choices=["ansi", "json", "html", "junit-xml"],
                         help=_("format of check results"))
     parser.add_argument("--target",
                         action="store",
@@ -384,7 +384,6 @@ def main():
                 }
 
     LOGGER.debug(results)
-
     # Render output
     file_manager = open(args.output_file, "w") if args.output_file else nullcontext(sys.stdout)
     with file_manager as output_file:
@@ -409,7 +408,9 @@ def main():
                         url = f"https://submit.cs50.io/check50/{tag_hash}"
 
                     termcolor.cprint(_("To see the results in your browser go to {}").format(url), "white", attrs=["bold"])
-
+            elif output == "junit-xml":
+                output_file.write(renderer.to_junitXML(**results))
+                output_file.write("\n")
 
 if __name__ == "__main__":
     main()
