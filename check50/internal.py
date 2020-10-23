@@ -120,7 +120,12 @@ def load_config(check_dir):
 
     # Get config file
     try:
-        config_file = lib50.config.get_config_filepath(check_dir)
+        if check_dir.is_file():
+            yaml_path = check_dir if check_dir.suffix == ".yaml" else None
+            yml_path = check_dir if check_dir.suffix == ".yml" else None
+            config_file = yaml_path or yml_path
+        else:
+            config_file = lib50.config.get_config_filepath(check_dir)
     except lib50.Error:
         raise _exceptions.Error(_("Invalid slug for check50. Did you mean something else?"))
 

@@ -339,12 +339,16 @@ def main():
 
     # Otherwise run checks locally
     else:
+        is_file = False
         with lib50.ProgressBar("Checking") if "ansi" in args.output else nullcontext():
             # If developing, assume slug is a path to check_dir
             if args.dev:
                 internal.check_dir = Path(internal.slug).expanduser().resolve()
-                if not internal.check_dir.is_dir():
-                    raise _exceptions.Error(_("{} is not a directory").format(internal.check_dir))
+                if internal.check_dir.is_file():
+                    is_file = True
+                    internal.slug = internal.check_dir.name.rsplit(".", 1)[0]
+                elif not internal.check_dir.is_dir():
+                    raise _exceptions.Error(_("{} is not found").format(internal.check_dir))
             # Otherwise have lib50 create a local copy of slug
             else:
                 try:
@@ -365,9 +369,11 @@ def main():
 
             if not args.no_install_dependencies:
                 install_dependencies(config["dependencies"])
-
-            checks_file = (internal.check_dir / config["checks"]).resolve()
-
+            if is_file:
+                checks_file = (internal.check_dir.parents[0] / config["checks"]).resolve()
+            else:
+                checks_file = (internal.check_dir / config["checks"]).resolve()
+                
             # Have lib50 decide which files to include
             included_files = lib50.files(config.get("files"))[0]
 
