@@ -55,13 +55,13 @@ def to_junitXML(slug, results, version):
         cause = r["cause"]
         tc = TestCase(name, classname=f"check50.{slug}.{name}", log=log, allow_multiple_subelements=True)
         if r["passed"] == False:
-            tc.add_error_info(message="error", output=cause["rationale"])
+            tc.add_error_info(message = "error: " + cause["rationale"])
             if cause.get("help", None) is not None:
-                tc.add_error_info(message="help", output=cause["help"])
+                tc.add_error_info(message = "help: " + cause["help"])
         elif r["passed"] is None:
-            tc.add_skipped_info(message="reason", output=cause["rationale"])
+            tc.add_skipped_info(message = "reason: " + cause["rationale"])
             if cause.get("help", None) is not None:
-                tc.add_skipped_info(message="help", output=cause["help"])
+                tc.add_skipped_info(message = "help: " + cause["help"])
         cases.append(tc)
 
     ts = TestSuite(f"check50.{slug}", cases)
