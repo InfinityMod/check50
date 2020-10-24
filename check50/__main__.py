@@ -361,6 +361,10 @@ def main():
             # Load config
             config = internal.load_config(internal.check_dir)
 
+            # File support
+            if is_file:
+               internal.check_dir = internal.check_dir.parents[0]
+
             # Compile local checks if necessary
             if isinstance(config["checks"], dict):
                 config["checks"] = internal.compile_checks(config["checks"], prompt=args.dev)
@@ -369,10 +373,8 @@ def main():
 
             if not args.no_install_dependencies:
                 install_dependencies(config["dependencies"])
-            if is_file:
-                checks_file = (internal.check_dir.parents[0] / config["checks"]).resolve()
-            else:
-                checks_file = (internal.check_dir / config["checks"]).resolve()
+
+            checks_file = (internal.check_dir / config["checks"]).resolve()
                 
             # Have lib50 decide which files to include
             included_files = lib50.files(config.get("files"))[0]
